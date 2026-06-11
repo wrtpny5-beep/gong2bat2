@@ -11,23 +11,23 @@
 
 <style>
   :root {
-    --green-dark:   #2D5016;
-    --green-mid:    #4A7C23;
-    --green-light:  #7BB13C;
-    --green-pale:   #EAF3DE;
-    --green-bg:     #F4FAF0;
-    --soil:         #8B5E3C;
-    --soil-light:   #F5EDE6;
-    --sky:          #E8F4FD;
-    --text-main:    #1E2E14;
-    --text-sub:     #5A7040;
-    --text-muted:   #9EAF8A;
-    --border:       #D0E4BB;
+    --green-dark:   #03695e;
+    --green-mid:    #6daf5f;
+    --green-light:  #2390ca;
+    --green-pale:   #dff0f7;
+    --green-bg:     #f0f5f0;
+    --soil:         #a5c6db;
+    --soil-light:   #eef4f8;
+    --sky:          #e7e9d8;
+    --text-main:    #0d2e2a;
+    --text-sub:     #03695e;
+    --text-muted:   #7aafc0;
+    --border:       #b8d9e8;
     --white:        #FFFFFF;
     --radius-sm:    8px;
     --radius-md:    12px;
     --radius-lg:    18px;
-    --shadow:       0 2px 12px rgba(45,80,22,0.08);
+    --shadow:       0 2px 12px rgba(3,105,94,0.10);
     --font-jua:     'Jua', 'Gowun Dodum', sans-serif;
     --font-gaegu:   'Gaegu', 'Gowun Dodum', sans-serif;
   }
@@ -46,7 +46,7 @@
 
   /* 헤더 */
   header {
-    background: var(--green-dark);
+    background: #2D5016;
     padding: 18px 20px 14px;
     position: sticky;
     top: 0;
@@ -148,9 +148,9 @@
     border-radius: 10px;
     font-weight: 600;
   }
-  .badge-water { background: #DCEEFB; color: #2373A5; }
+  .badge-water { background: #dff0f7; color: #2390ca; }
   .badge-prune { background: #FFF3CD; color: #856404; }
-  .badge-ok    { background: var(--green-pale); color: var(--green-mid); }
+  .badge-ok    { background: #d0ede9; color: #03695e; }
 
   /* 작물 추가 버튼 */
   .add-btn {
@@ -169,7 +169,7 @@
     justify-content: center;
     gap: 6px;
   }
-  .add-btn:hover { border-color: var(--green-light); color: var(--green-mid); background: var(--green-pale); }
+  .add-btn:hover { border-color: #2390ca; color: #03695e; background: #dff0f7; }
 
   /* 일지 */
   .log-date-group { margin-bottom: 20px; }
@@ -211,8 +211,8 @@
     font-size: 11px;
     padding: 2px 8px;
     border-radius: 10px;
-    background: var(--green-pale);
-    color: var(--green-mid);
+    background: #dff0f7;
+    color: #2390ca;
     font-weight: 600;
   }
 
@@ -225,7 +225,7 @@
     max-width: calc(480px - 32px);
     width: calc(100% - 32px);
     padding: 14px;
-    background: var(--green-dark);
+    background: #2D5016;
     color: white;
     border: none;
     border-radius: var(--radius-lg);
@@ -241,7 +241,7 @@
     transition: background .15s;
     z-index: 50;
   }
-  .record-btn:hover { background: var(--green-mid); }
+  .record-btn:hover { background: #3a6b1a; }
 
   /* AI 상담 탭 */
   .ai-header {
@@ -283,7 +283,7 @@
     transition: all .15s;
     font-family: inherit;
   }
-  .chip:hover { border-color: var(--green-light); background: var(--green-pale); color: var(--green-dark); }
+  .chip:hover { border-color: #2390ca; background: #dff0f7; color: #03695e; }
 
   /* 채팅 */
   .chat-box {
@@ -311,7 +311,7 @@
     line-height: 1.6;
   }
   .chat-msg.user .chat-bubble {
-    background: var(--green-dark);
+    background: #03695e;
     color: white;
     border-bottom-right-radius: 4px;
   }
@@ -337,7 +337,7 @@
   .typing-dot {
     width: 6px; height: 6px;
     border-radius: 50%;
-    background: var(--green-mid);
+    background: #2390ca;
     animation: bounce 1.2s infinite;
   }
   .typing-dot:nth-child(2) { animation-delay: .2s; }
@@ -366,7 +366,7 @@
   .chat-input:focus { border-color: var(--green-light); }
   .send-btn {
     padding: 10px 16px;
-    background: var(--green-dark);
+    background: #03695e;
     color: white;
     border: none;
     border-radius: var(--radius-sm);
@@ -375,7 +375,7 @@
     transition: background .15s;
     flex-shrink: 0;
   }
-  .send-btn:hover { background: var(--green-mid); }
+  .send-btn:hover { background: #6daf5f; }
   .send-btn:disabled { background: var(--border); cursor: not-allowed; }
 
   /* 모달 */
@@ -452,7 +452,7 @@
   .submit-btn {
     width: 100%;
     padding: 13px;
-    background: var(--green-dark);
+    background: #03695e;
     color: white;
     border: none;
     border-radius: var(--radius-md);
@@ -476,7 +476,7 @@
     margin-bottom: 14px;
   }
   .profile-emoji-big { font-size: 36px; line-height: 1; }
-  .profile-name-display { font-size: 17px; font-weight: 600; color: var(--green-dark); font-family: var(--font-jua); }
+  .profile-name-display { font-size: 17px; font-weight: 600; color: #03695e; font-family: var(--font-jua); }
   .profile-name-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
   .profile-emoji-grid {
     display: grid;
@@ -512,7 +512,7 @@
   .name-text-input:focus { border-color: var(--green-light); }
   .name-save-btn {
     padding: 10px 16px;
-    background: var(--green-dark);
+    background: #03695e;
     color: white;
     border: none;
     border-radius: var(--radius-sm);
@@ -522,7 +522,7 @@
     white-space: nowrap;
     transition: background .15s;
   }
-  .name-save-btn:hover { background: var(--green-mid); }
+  .name-save-btn:hover { background: #6daf5f; }
 
   /* 설정 섹션 */
   .settings-card {
@@ -559,7 +559,7 @@
   .save-api-btn {
     margin-top: 8px;
     padding: 8px 16px;
-    background: var(--green-dark);
+    background: #03695e;
     color: white;
     border: none;
     border-radius: var(--radius-sm);
@@ -612,12 +612,12 @@
     margin-bottom: 14px;
   }
   .detail-stat {
-    background: var(--green-pale);
+    background: #d0ede9;
     border-radius: var(--radius-sm);
     padding: 10px;
     text-align: center;
   }
-  .detail-stat-val { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+  .detail-stat-val { font-size: 15px; font-weight: 700; color: #03695e; }
   .detail-stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
   .delete-crop-btn {
     width: 100%;
@@ -642,7 +642,7 @@
     display: none;
     position: fixed;
     top: 70px; right: 12px;
-    background: var(--green-dark);
+    background: #2D5016;
     color: white;
     border-radius: var(--radius-md);
     padding: 14px 16px;
@@ -675,7 +675,7 @@
   .guide-card:hover { box-shadow: var(--shadow); }
   .guide-card-emoji { font-size: 28px; flex-shrink: 0; }
   .guide-card-info { flex: 1; }
-  .guide-card-name { font-size: 15px; font-weight: 600; color: var(--text-main); }
+  .guide-card-name { font-size: 15px; font-weight: 600; color: #0d2e2a; }
   .guide-card-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
   .guide-card-arrow { font-size: 16px; color: var(--text-muted); }
   .guide-content {
@@ -748,13 +748,13 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --green-bg:   #0F1A08;
-      --white:      #1A2710;
-      --border:     #2A4018;
-      --text-main:  #D4E8B0;
-      --text-sub:   #8AAF5A;
-      --text-muted: #4A6030;
-      --green-pale: #1A2D10;
+      --green-bg:   #051f1c;
+      --white:      #0a2e2a;
+      --border:     #0e4a43;
+      --text-main:  #b8e8e4;
+      --text-sub:   #6daf5f;
+      --text-muted: #3a7a72;
+      --green-pale: #0d3530;
     }
   }
 </style>
@@ -1020,6 +1020,7 @@ document.getElementById('addCropBtn').addEventListener('click', () => {
   document.getElementById('cropName').value = '';
   document.getElementById('cropLocation').value = '';
   document.getElementById('waterInterval').value = 2;
+  document.getElementById('plantedAtInput').value = new Date().toISOString().split('T')[0];
   selectedEmoji = '🌱';
   renderEmojiPicker();
   document.getElementById('addCropModal').classList.add('open');
@@ -1044,17 +1045,19 @@ document.getElementById('saveCropBtn').addEventListener('click', async () => {
   const name = document.getElementById('cropName').value.trim();
   const waterInterval = parseInt(document.getElementById('waterInterval').value) || 2;
   const location = document.getElementById('cropLocation').value.trim();
+  const plantedAtVal = document.getElementById('plantedAtInput').value;
+  const plantedAtDate = plantedAtVal ? new Date(plantedAtVal) : new Date();
   if (!name) { toast('작물 이름을 입력해주세요'); return; }
   const editId = document.getElementById('saveCropBtn').dataset.editId;
   if (editId) {
-    await updateDoc(doc(db, 'crops', editId), { name, emoji: selectedEmoji, waterInterval, location });
+    await updateDoc(doc(db, 'crops', editId), { name, emoji: selectedEmoji, waterInterval, location, plantedAt: plantedAtDate });
     document.getElementById('saveCropBtn').dataset.editId = '';
     document.getElementById('saveCropBtn').textContent = '추가하기';
     toast('수정했어요 ✓');
   } else {
     await addDoc(cropsRef, {
       name, emoji: selectedEmoji, waterInterval, location,
-      plantedAt: serverTimestamp(),
+      plantedAt: plantedAtDate,
       addedBy: (selectedProfileEmoji ? `${selectedProfileEmoji} ${myName}` : myName) || '누군가'
     });
     toast(`${selectedEmoji} ${name} 추가했어요!`);
@@ -1377,6 +1380,12 @@ window.openEditCrop = function(cropId) {
   document.getElementById('cropName').value = c.name;
   document.getElementById('waterInterval').value = c.waterInterval || 2;
   document.getElementById('cropLocation').value = c.location || '';
+  if (c.plantedAt) {
+    const d = c.plantedAt.toDate ? c.plantedAt.toDate() : new Date(c.plantedAt);
+    document.getElementById('plantedAtInput').value = d.toISOString().split('T')[0];
+  } else {
+    document.getElementById('plantedAtInput').value = '';
+  }
   renderEmojiPicker();
   const saveBtn = document.getElementById('saveCropBtn');
   saveBtn.textContent = '수정하기';
@@ -1511,7 +1520,7 @@ if (!myName) {
     <button class="save-api-btn" id="saveApiBtn">저장</button>
     <p style="font-size:11px;color:var(--text-muted);margin-top:8px">
       키는 이 기기에만 저장돼요. 
-      <a href="https://console.groq.com/keys" target="_blank" style="color:var(--green-mid)">발급받기 →</a>
+      <a href="https://console.groq.com/keys" target="_blank" style="color:#2390ca">발급받기 →</a>
     </p>
   </div>
 
@@ -1550,6 +1559,10 @@ if (!myName) {
     <div class="form-group">
       <label class="form-label">위치 (선택)</label>
       <input class="form-input" id="cropLocation" placeholder="예: 왼쪽 화단, 3번 자리">
+    </div>
+    <div class="form-group">
+      <label class="form-label">심은 날 (선택)</label>
+      <input class="form-input" id="plantedAtInput" type="date">
     </div>
     <button class="submit-btn" id="saveCropBtn">추가하기</button>
   </div>
