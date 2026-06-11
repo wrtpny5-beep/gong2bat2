@@ -732,6 +732,32 @@
     padding: 0;
     margin-bottom: 14px;
   }
+  /* 도감 편집 */
+  .guide-edit-textarea {
+    width: 100%; min-height: 320px;
+    padding: 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-md); font-family: 'Poor Story', 'Gowun Dodum', sans-serif;
+    font-size: 14px; line-height: 1.8; color: var(--text-main);
+    background: var(--green-bg); resize: vertical; outline: none;
+  }
+  .guide-edit-textarea:focus { border-color: #2390ca; }
+  .guide-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+  .guide-save-btn {
+    flex: 1; padding: 11px; background: #2D5016; color: white;
+    border: none; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; cursor: pointer;
+  }
+  .guide-edit-btn {
+    padding: 11px 16px; background: var(--white); color: var(--text-sub);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; cursor: pointer;
+  }
+  .guide-refresh-btn {
+    padding: 11px 16px; background: var(--white); color: #2390ca;
+    border: 1px solid #2390ca; border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 14px; cursor: pointer;
+  }
+
 
   /* 일지 수정/삭제 */
   .log-item { position: relative; }
@@ -1299,35 +1325,67 @@ function renderGuideCards() {
   `).join('');
 }
 
-window.openGuide = async function(cropId) {
-  const c = crops.find(x => x.id === cropId);
-  if (!c) return;
-  document.getElementById('guideList').style.display = 'none';
-  document.getElementById('guideDetail').style.display = 'block';
-  document.getElementById('guideDetailContent').innerHTML = `
+function renderGuideDetail(c, text, editMode = false) {
+  const header = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
       <span style="font-size:36px">${c.emoji}</span>
       <div>
         <div style="font-size:18px;font-weight:600">${c.name}</div>
         <div style="font-size:12px;color:var(--text-muted)">관리 가이드</div>
       </div>
-    </div>
-    <div class="guide-loading">🌿 밭요정이 정보를 찾고 있어요…</div>
-  `;
-  if (!groqKey) {
-    document.getElementById('guideDetailContent').innerHTML += `<p style="font-size:13px;color:var(--text-muted);text-align:center;margin-top:8px">설정 탭에서 Groq API 키를 먼저 입력해주세요</p>`;
-    return;
+    </div>`;
+  if (editMode) {
+    document.getElementById('guideDetailContent').innerHTML = header + `
+      <textarea class="guide-edit-textarea" id="guideEditArea">${text}</textarea>
+      <div class="guide-btn-row">
+        <button class="guide-save-btn" onclick="saveGuide('${c.id}')">💾 저장</button>
+        <button class="guide-edit-btn" onclick="openGuide('${c.id}')">취소</button>
+      </div>`;
+  } else {
+    document.getElementById('guideDetailContent').innerHTML = header + `
+      <div class="guide-content" id="guideContentText">${text.replace(/
+/g,'<br>')}</div>
+      <div class="guide-btn-row">
+        <button class="guide-edit-btn" onclick="toggleGuideEdit('${c.id}')">✏️ 편집</button>
+        <button class="guide-refresh-btn" onclick="fetchGuide('${c.id}')">🔄 AI 새로 생성</button>
+      </div>`;
   }
+}
+
+window.toggleGuideEdit = function(cropId) {
+  const c = crops.find(x => x.id === cropId);
+  if (!c) return;
+  const text = c.guideText || document.getElementById('guideContentText')?.innerText || '';
+  renderGuideDetail(c, text, true);
+};
+
+window.saveGuide = async function(cropId) {
+  const text = document.getElementById('guideEditArea').value.trim();
+  if (!text) return;
+  await updateDoc(doc(db, 'crops', cropId), { guideText: text });
+  toast('저장했어요 ✓');
+  // crops 배열이 onSnapshot으로 업데이트되기 전에 임시로 반영
+  const c = crops.find(x => x.id === cropId);
+  if (c) c.guideText = text;
+  renderGuideDetail(c, text, false);
+};
+
+window.fetchGuide = async function(cropId) {
+  const c = crops.find(x => x.id === cropId);
+  if (!c) return;
+  document.getElementById('guideDetailContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:36px">${c.emoji}</span>
+      <div><div style="font-size:18px;font-weight:600">${c.name}</div></div>
+    </div>
+    <div class="guide-loading">🌿 밭요정이 정보를 찾고 있어요…</div>`;
+  if (!groqKey) { toast('설정 탭에서 Groq API 키를 먼저 입력해주세요'); return; }
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${groqKey}`
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1024,
+        model: 'llama-3.3-70b-versatile', max_tokens: 1024,
         messages: [
           { role: 'system', content: '당신은 텃밭 재배 전문가입니다. 반드시 한국어로만 답변하세요. 다른 언어는 절대 사용하지 마세요. 친근하고 실용적으로 답변하세요.' },
           { role: 'user', content: `${c.name} 텃밭 재배 관리법을 아래 항목으로 간결하게 알려주세요. 각 항목은 이모지와 함께 써주세요.\n\n💧 물 주기\n✂️ 가지치기\n🌿 비료\n🐛 병충해 예방\n🎉 수확 시기\n💡 재배 팁` }
@@ -1337,19 +1395,25 @@ window.openGuide = async function(cropId) {
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
     const text = data.choices?.[0]?.message?.content || '정보를 가져오지 못했어요.';
-    document.getElementById('guideDetailContent').innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <span style="font-size:36px">${c.emoji}</span>
-        <div>
-          <div style="font-size:18px;font-weight:600">${c.name}</div>
-          <div style="font-size:12px;color:var(--text-muted)">관리 가이드</div>
-        </div>
-      </div>
-      <div class="guide-content">${text}</div>
-    `;
+    await updateDoc(doc(db, 'crops', cropId), { guideText: text });
+    renderGuideDetail(c, text, false);
   } catch(e) {
-    document.getElementById('guideDetailContent').innerHTML += `<p style="color:#dc2626;font-size:13px;margin-top:8px">오류: ${e.message}</p>`;
+    toast(`오류: ${e.message}`);
   }
+};
+
+window.openGuide = async function(cropId) {
+  const c = crops.find(x => x.id === cropId);
+  if (!c) return;
+  document.getElementById('guideList').style.display = 'none';
+  document.getElementById('guideDetail').style.display = 'block';
+  // 저장된 내용 있으면 바로 표시
+  if (c.guideText) {
+    renderGuideDetail(c, c.guideText, false);
+    return;
+  }
+  // 없으면 AI로 생성
+  fetchGuide(cropId);
 };
 
 document.getElementById('guideBackBtn').addEventListener('click', () => {
