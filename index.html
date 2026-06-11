@@ -1192,7 +1192,7 @@ ${cropCtx}
         'Authorization': `Bearer ${groqKey}`
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 1024,
         messages: [
           { role: 'system', content: systemCtx },
@@ -1276,7 +1276,7 @@ window.openGuide = async function(cropId) {
         'Authorization': `Bearer ${groqKey}`
       },
       body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
+        model: 'llama-3.3-70b-versatile',
         max_tokens: 1024,
         messages: [
           { role: 'system', content: '당신은 텃밭 재배 전문가입니다. 한국어로 친근하고 실용적으로 답변하세요.' },
