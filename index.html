@@ -1184,7 +1184,8 @@ async function sendAI(userMsg) {
   try {
     const systemCtx = `당신은 텃밭 관리 전문 AI 도우미 '밭요정'입니다.
 ${cropCtx}
-한국어로 친근하고 간결하게 답변하세요. 작물 관리 (물 주기, 가지치기, 비료, 병충해, 수확 시기 등)에 대한 실용적인 조언을 주세요.
+반드시 한국어로만 답변하세요. 다른 언어(영어, 중국어, 러시아어 등)는 절대 사용하지 마세요.
+친근하고 간결하게, 작물 관리 (물 주기, 가지치기, 비료, 병충해, 수확 시기 등)에 대한 실용적인 조언을 주세요.
 답변은 3-5문장 정도로 핵심만 말해주세요.`;
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
@@ -1280,7 +1281,7 @@ window.openGuide = async function(cropId) {
         model: 'llama-3.3-70b-versatile',
         max_tokens: 1024,
         messages: [
-          { role: 'system', content: '당신은 텃밭 재배 전문가입니다. 한국어로 친근하고 실용적으로 답변하세요.' },
+          { role: 'system', content: '당신은 텃밭 재배 전문가입니다. 반드시 한국어로만 답변하세요. 다른 언어는 절대 사용하지 마세요. 친근하고 실용적으로 답변하세요.' },
           { role: 'user', content: `${c.name} 텃밭 재배 관리법을 아래 항목으로 간결하게 알려주세요. 각 항목은 이모지와 함께 써주세요.\n\n💧 물 주기\n✂️ 가지치기\n🌿 비료\n🐛 병충해 예방\n🎉 수확 시기\n💡 재배 팁` }
         ]
       })
