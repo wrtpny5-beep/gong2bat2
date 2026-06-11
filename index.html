@@ -137,6 +137,7 @@
     position: relative;
   }
   .crop-card:hover { box-shadow: var(--shadow); }
+  .crop-card.needs-water { border: 2.5px solid #2390ca; box-shadow: 0 0 0 3px rgba(35,144,202,0.12); }
   .crop-emoji { font-size: 32px; margin-bottom: 6px; display: block; }
   .crop-name { font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
   .crop-date { font-size: 11px; color: var(--text-muted); }
@@ -934,7 +935,7 @@ function renderCrops() {
       let badge = '', badgeCls = '';
       if (waterDays >= (c.waterInterval || 2)) { badge = '💧 물 필요'; badgeCls = 'badge-water'; }
       else { badge = '✓ 양호'; badgeCls = 'badge-ok'; }
-      return `<div class="crop-card" onclick="openCropDetail('${c.id}')">
+      return `<div class="crop-card ${waterDays >= (c.waterInterval || 2) ? 'needs-water' : ''}" onclick="openCropDetail('${c.id}')">
         <span class="crop-emoji">${c.emoji}</span>
         <div class="crop-name">${c.name}</div>
         <div class="crop-date">심은 날: ${formatDate(c.plantedAt)} (${since}일째)</div>
