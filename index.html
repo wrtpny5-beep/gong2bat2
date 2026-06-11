@@ -635,6 +635,29 @@
     transition: background .15s;
   }
   .delete-crop-btn:hover { background: #fef2f2; }
+  /* 작물 메모 */
+  .crop-memo { font-size: 12px; color: var(--text-muted); margin-top: 3px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 댓글 */
+  .comment-section { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+  .comment-item { display: flex; gap: 6px; align-items: flex-start; margin-bottom: 6px; }
+  .comment-who { font-size: 11px; font-weight: 600; color: #2390ca; flex-shrink: 0; }
+  .comment-text { font-size: 12px; color: var(--text-main); flex: 1; line-height: 1.5; }
+  .comment-time { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+  .comment-input-row { display: flex; gap: 6px; margin-top: 6px; }
+  .comment-input {
+    flex: 1; padding: 6px 10px;
+    border: 1px solid var(--border); border-radius: 20px;
+    font-family: inherit; font-size: 12px;
+    background: var(--green-bg); color: var(--text-main); outline: none;
+  }
+  .comment-input:focus { border-color: #2390ca; }
+  .comment-send-btn {
+    padding: 6px 12px; background: #2390ca; color: white;
+    border: none; border-radius: 20px; font-size: 12px;
+    font-family: inherit; cursor: pointer; flex-shrink: 0;
+  }
+
   /* 날씨 플로팅 */
   .weather-icon-btn {
     background: none; border: none; cursor: pointer;
@@ -787,8 +810,9 @@ const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
 // ─── 전역 상태 ─────────────────────────────────────────────────────────────
-let crops   = [];
-let logs    = [];
+let crops    = [];
+let logs     = [];
+let comments = [];
 let myName  = localStorage.getItem('ggbb_name') || '';
 let groqKey = localStorage.getItem('ggbb_groq') || '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';
 
@@ -939,6 +963,7 @@ function renderCrops() {
         <span class="crop-emoji">${c.emoji}</span>
         <div class="crop-name">${c.name}</div>
         <div class="crop-date">심은 날: ${formatDate(c.plantedAt)} (${since}일째)</div>
+        ${c.memo ? `<div class="crop-memo">${c.memo}</div>` : ''}
         <span class="crop-badge ${badgeCls}">${badge}</span>
       </div>`;
     }).join('');
@@ -974,6 +999,14 @@ function renderLogs() {
       <div class="log-date-label">${date}</div>
       ${items.map(l => {
         const crop = crops.find(c => c.id === l.cropId);
+        const logComments = comments.filter(c => c.logId === l.id);
+        const commentHtml = logComments.map(c =>
+          `<div class="comment-item">
+            <span class="comment-who">${c.who}</span>
+            <span class="comment-text">${c.text}</span>
+            <span class="comment-time">${formatDate(c.createdAt)}</span>
+          </div>`
+        ).join('');
         return `<div class="log-item" id="log-${l.id}">
           <div class="log-type-icon">${typeMap[l.type] || '📝'}</div>
           <div class="log-info">
@@ -984,6 +1017,13 @@ function renderLogs() {
               <button class="log-action-btn" onclick="openEditLog('${l.id}')">✏️ 수정</button>
               <button class="log-action-btn del" onclick="deleteLog('${l.id}')">🗑️ 삭제</button>
             </div>
+            <div class="comment-section">
+              ${commentHtml}
+              <div class="comment-input-row">
+                <input class="comment-input" id="comment-input-${l.id}" placeholder="댓글 달기…">
+                <button class="comment-send-btn" onclick="addComment('${l.id}')">전송</button>
+              </div>
+            </div>
           </div>
           <span class="log-who">${l.who || '?'}</span>
         </div>`;
@@ -993,8 +1033,9 @@ function renderLogs() {
 }
 
 // ─── Firestore 실시간 리스닝 ────────────────────────────────────────────────
-const cropsRef = collection(db, 'crops');
-const logsRef  = collection(db, 'logs');
+const cropsRef    = collection(db, 'crops');
+const logsRef     = collection(db, 'logs');
+const commentsRef = collection(db, 'comments');
 
 onSnapshot(query(cropsRef, orderBy('plantedAt', 'desc')), snap => {
   crops = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -1011,6 +1052,11 @@ onSnapshot(query(logsRef, orderBy('createdAt', 'desc')), snap => {
   renderCrops();
 });
 
+onSnapshot(query(commentsRef, orderBy('createdAt', 'asc')), snap => {
+  comments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderLogs();
+});
+
 // ─── 작물 추가 모달 ─────────────────────────────────────────────────────────
 const cropEmojis = ['🍅','🥕','🥦','🌽','🥬','🫑','🍆','🧅','🧄','🌶️','🥒','🫒','🍓','🍀','🌻','🌿'];
 let selectedEmoji = '🌱';
@@ -1023,6 +1069,7 @@ document.getElementById('addCropBtn').addEventListener('click', () => {
   document.getElementById('cropLocation').value = '';
   document.getElementById('waterInterval').value = 2;
   document.getElementById('plantedAtInput').value = new Date().toISOString().split('T')[0];
+  document.getElementById('cropMemo').value = '';
   selectedEmoji = '🌱';
   renderEmojiPicker();
   document.getElementById('addCropModal').classList.add('open');
@@ -1049,16 +1096,17 @@ document.getElementById('saveCropBtn').addEventListener('click', async () => {
   const location = document.getElementById('cropLocation').value.trim();
   const plantedAtVal = document.getElementById('plantedAtInput').value;
   const plantedAtDate = plantedAtVal ? new Date(plantedAtVal) : new Date();
+  const cropMemo = document.getElementById('cropMemo').value.trim();
   if (!name) { toast('작물 이름을 입력해주세요'); return; }
   const editId = document.getElementById('saveCropBtn').dataset.editId;
   if (editId) {
-    await updateDoc(doc(db, 'crops', editId), { name, emoji: selectedEmoji, waterInterval, location, plantedAt: plantedAtDate });
+    await updateDoc(doc(db, 'crops', editId), { name, emoji: selectedEmoji, waterInterval, location, plantedAt: plantedAtDate, memo: cropMemo });
     document.getElementById('saveCropBtn').dataset.editId = '';
     document.getElementById('saveCropBtn').textContent = '추가하기';
     toast('수정했어요 ✓');
   } else {
     await addDoc(cropsRef, {
-      name, emoji: selectedEmoji, waterInterval, location,
+      name, emoji: selectedEmoji, waterInterval, location, memo: cropMemo,
       plantedAt: plantedAtDate,
       addedBy: (selectedProfileEmoji ? `${selectedProfileEmoji} ${myName}` : myName) || '누군가'
     });
@@ -1383,6 +1431,7 @@ window.openEditCrop = function(cropId) {
   document.getElementById('cropName').value = c.name;
   document.getElementById('waterInterval').value = c.waterInterval || 2;
   document.getElementById('cropLocation').value = c.location || '';
+  document.getElementById('cropMemo').value = c.memo || '';
   if (c.plantedAt) {
     const d = c.plantedAt.toDate ? c.plantedAt.toDate() : new Date(c.plantedAt);
     document.getElementById('plantedAtInput').value = d.toISOString().split('T')[0];
@@ -1394,6 +1443,18 @@ window.openEditCrop = function(cropId) {
   saveBtn.textContent = '수정하기';
   saveBtn.dataset.editId = cropId;
   document.getElementById('addCropModal').classList.add('open');
+};
+
+
+// ─── 댓글 ────────────────────────────────────────────────────────────────
+window.addComment = async function(logId) {
+  if (!myName) { toast('먼저 설정 탭에서 이름을 설정해주세요'); return; }
+  const inp = document.getElementById(`comment-input-${logId}`);
+  const text = inp.value.trim();
+  if (!text) return;
+  const whoStr = selectedProfileEmoji ? `${selectedProfileEmoji} ${myName}` : myName;
+  await addDoc(commentsRef, { logId, text, who: whoStr, createdAt: serverTimestamp() });
+  inp.value = '';
 };
 
 // ─── 초기화 ────────────────────────────────────────────────────────────────
@@ -1566,6 +1627,10 @@ if (!myName) {
     <div class="form-group">
       <label class="form-label">심은 날 (선택)</label>
       <input class="form-input" id="plantedAtInput" type="date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모 (선택)</label>
+      <textarea class="form-textarea" id="cropMemo" placeholder="특이사항, 품종, 구입처 등…" rows="2"></textarea>
     </div>
     <button class="submit-btn" id="saveCropBtn">추가하기</button>
   </div>
