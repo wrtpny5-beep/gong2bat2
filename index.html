@@ -676,7 +676,7 @@ const db  = getFirestore(app);
 let crops   = [];
 let logs    = [];
 let myName  = localStorage.getItem('ggbb_name') || '';
-let geminiKey = localStorage.getItem('ggbb_gemini') || '';
+let claudeKey = localStorage.getItem('ggbb_claude') || '';
 
 // ─── 유틸 ──────────────────────────────────────────────────────────────────
 function toast(msg) {
@@ -766,8 +766,8 @@ function initNameChips() {
 document.getElementById('saveApiBtn').addEventListener('click', () => {
   const val = document.getElementById('geminiApiInput').value.trim();
   if (!val) { toast('API 키를 입력해주세요'); return; }
-  geminiKey = val;
-  localStorage.setItem('ggbb_gemini', val);
+  claudeKey = val;
+  localStorage.setItem('ggbb_claude', val);
   toast('저장했어요 ✓');
 });
 document.getElementById('apiToggle').addEventListener('click', () => {
@@ -776,7 +776,7 @@ document.getElementById('apiToggle').addEventListener('click', () => {
 });
 window.addEventListener('DOMContentLoaded', () => {
   const inp = document.getElementById('geminiApiInput');
-  if (geminiKey) inp.value = geminiKey;
+  if (claudeKey) inp.value = claudeKey;
 });
 
 // ─── 작물 렌더링 ───────────────────────────────────────────────────────────
@@ -964,7 +964,7 @@ document.getElementById('saveLogBtn').addEventListener('click', async () => {
   toast('기록했어요 ✓');
 });
 
-// ─── AI 상담 (Gemini) ──────────────────────────────────────────────────────
+// ─── AI 상담 (Claude) ──────────────────────────────────────────────────────
 const chatHistory = [];
 
 function appendChat(role, text) {
@@ -995,41 +995,42 @@ function hideTyping() {
 }
 
 async function sendAI(userMsg) {
-  if (!geminiKey) { toast('설정 탭에서 Gemini API 키를 먼저 입력해주세요'); return; }
+  if (!claudeKey) { toast('설정 탭에서 Claude API 키를 먼저 입력해주세요'); return; }
   const cropId = document.getElementById('aiCropSelect').value;
   const crop   = crops.find(c => c.id === cropId);
   const cropCtx = crop
     ? `현재 선택한 작물: ${crop.name} (심은 지 ${daysSince(crop.plantedAt)}일, 물 주기 간격 ${crop.waterInterval||2}일)`
     : '작물 미선택';
   appendChat('user', userMsg);
-  chatHistory.push({ role:'user', parts:[{text:userMsg}] });
+  chatHistory.push({ role:'user', content: userMsg });
   showTyping();
   document.getElementById('sendBtn').disabled = true;
   try {
-    const systemCtx = `당신은 텃밭 관리 전문 AI 도우미 '밭요정'입니다. 
+    const systemCtx = `당신은 텃밭 관리 전문 AI 도우미 '밭요정'입니다.
 ${cropCtx}
-한국어로 친근하고 간결하게 답변하세요. 작물 관리 (물 주기, 가지치기, 비료, 병충해, 수확 시기 등)에 대한 실용적인 조언을 주세요. 
+한국어로 친근하고 간결하게 답변하세요. 작물 관리 (물 주기, 가지치기, 비료, 병충해, 수확 시기 등)에 대한 실용적인 조언을 주세요.
 답변은 3-5문장 정도로 핵심만 말해주세요.`;
-    const models = ['gemini-2.5-flash','gemini-2.0-flash','gemini-2.0-flash-lite'];
-    let data;
-    for (const model of models) {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`,
-        { method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            system_instruction: { parts:[{text:systemCtx}] },
-            contents: chatHistory
-          })
-        }
-      );
-      data = await res.json();
-      if (!data.error) break;
-    }
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': claudeKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1024,
+        system: systemCtx,
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
     if (data.error) throw new Error(data.error.message);
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 받지 못했어요.';
+    const reply = data.content?.[0]?.text || '답변을 받지 못했어요.';
     hideTyping();
     appendChat('ai', reply);
-    chatHistory.push({ role:'model', parts:[{text:reply}] });
+    chatHistory.push({ role:'assistant', content: reply });
   } catch(e) {
     hideTyping();
     appendChat('ai', `오류가 발생했어요: ${e.message}`);
@@ -1155,15 +1156,15 @@ if (!myName) {
 
   <p class="section-title">API 설정</p>
   <div class="settings-card">
-    <h3>Gemini API 키</h3>
+    <h3>Claude API 키</h3>
     <div class="api-input-wrap">
-      <input class="api-input" id="geminiApiInput" type="password" placeholder="AIza…">
+      <input class="api-input" id="geminiApiInput" type="password" placeholder="sk-ant-…">
       <button class="api-toggle" id="apiToggle">👁</button>
     </div>
     <button class="save-api-btn" id="saveApiBtn">저장</button>
     <p style="font-size:11px;color:var(--text-muted);margin-top:8px">
       키는 이 기기에만 저장돼요. 
-      <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--green-mid)">발급받기 →</a>
+      <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--green-mid)">발급받기 →</a>
     </p>
   </div>
 
@@ -1172,7 +1173,7 @@ if (!myName) {
     <p style="font-size:13px;color:var(--text-sub);line-height:1.7">
       공공밭밭 🌱<br>
       리아와 지혜의 텃밭 관리 앱<br>
-      <span style="color:var(--text-muted);font-size:12px">Firebase로 실시간 공유 · Gemini AI 상담</span>
+      <span style="color:var(--text-muted);font-size:12px">Firebase로 실시간 공유 · Claude AI 상담</span>
     </p>
   </div>
 </div>
