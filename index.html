@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2D5016">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="공공밭밭">
+<title>공공밭밭 🌱</title>
+
+<style>
+  :root {
+    --green-dark:   #2D5016;
+    --green-mid:    #4A7C23;
+    --green-light:  #7BB13C;
+    --green-pale:   #EAF3DE;
+    --green-bg:     #F4FAF0;
+    --soil:         #8B5E3C;
+    --soil-light:   #F5EDE6;
+    --sky:          #E8F4FD;
+    --text-main:    #1E2E14;
+    --text-sub:     #5A7040;
+    --text-muted:   #9EAF8A;
+    --border:       #D0E4BB;
+    --white:        #FFFFFF;
+    --radius-sm:    8px;
+    --radius-md:    12px;
+    --radius-lg:    18px;
+    --shadow:       0 2px 12px rgba(45,80,22,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Gowun Dodum', 'Noto Sans KR', sans-serif;
+    background: var(--green-bg);
+    color: var(--text-main);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  /* 헤더 */
+  header {
+    background: var(--green-dark);
+    padding: 18px 20px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .app-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.3px;
+  }
+  .app-title span { color: #A8D56A; }
+  .weather-chip {
+    font-size: 12px;
+    color: #A8D56A;
+    background: rgba(168,213,106,0.15);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(168,213,106,0.3);
+  }
+
+  /* 탭 */
+  .tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 7px 4px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all .18s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .tab-btn .tab-icon { font-size: 18px; }
+  .tab-btn.active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* 콘텐츠 영역 */
+  .content {
+    padding: 16px;
+    padding-bottom: 32px;
+    display: none;
+  }
+  .content.active { display: block; }
+
+  /* 섹션 타이틀 */
+  .section-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    letter-spacing: 0.03em;
+  }
+
+  /* 작물 카드 */
+  .crop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .crop-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    cursor: pointer;
+    transition: box-shadow .15s;
+    position: relative;
+  }
+  .crop-card:hover { box-shadow: var(--shadow); }
+  .crop-emoji { font-size: 32px; margin-bottom: 6px; display: block; }
+  .crop-name { font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
+  .crop-date { font-size: 11px; color: var(--text-muted); }
+  .crop-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 10px;
+    padding: 3px 7px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  .badge-water { background: #DCEEFB; color: #2373A5; }
+  .badge-prune { background: #FFF3CD; color: #856404; }
+  .badge-ok    { background: var(--green-pale); color: var(--green-mid); }
+
+  /* 작물 추가 버튼 */
+  .add-btn {
+    width: 100%;
+    padding: 14px;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all .18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .add-btn:hover { border-color: var(--green-light); color: var(--green-mid); background: var(--green-pale); }
+
+  /* 일지 */
+  .log-date-group { margin-bottom: 20px; }
+  .log-date-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .log-date-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .log-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .log-type-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .log-info { flex: 1; }
+  .log-crop { font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 2px; }
+  .log-action { font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
+  .log-meta { font-size: 11px; color: var(--text-muted); }
+  .log-who {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--green-pale);
+    color: var(--green-mid);
+    font-weight: 600;
+  }
+
+  /* 기록 추가 */
+  .record-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 50%;
+    transform: translateX(50%);
+    max-width: calc(480px - 32px);
+    width: calc(100% - 32px);
+    padding: 14px;
+    background: var(--green-dark);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(45,80,22,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background .15s;
+    z-index: 50;
+  }
+  .record-btn:hover { background: var(--green-mid); }
+
+  /* AI 상담 탭 */
+  .ai-header {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .ai-crop-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-main);
+    background: var(--green-bg);
+    margin-top: 8px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath fill='%239EAF8A' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+  .quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .chip {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-sub);
+    background: var(--white);
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  .chip:hover { border-color: var(--green-light); background: var(--green-pale); color: var(--green-dark); }
+
+  /* 채팅 */
+  .chat-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    min-height: 260px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .chat-msg {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-msg.user { align-items: flex-end; }
+  .chat-msg.ai   { align-items: flex-start; }
+  .chat-bubble {
+    max-width: 85%;
+    padding: 10px 13px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .chat-msg.user .chat-bubble {
+    background: var(--green-dark);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .chat-msg.ai .chat-bubble {
+    background: var(--green-pale);
+    color: var(--text-main);
+    border-bottom-left-radius: 4px;
+  }
+  .chat-sender {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+    padding: 0 4px;
+  }
+  .typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 10px 13px;
+    background: var(--green-pale);
+    border-radius: var(--radius-md);
+    border-bottom-left-radius: 4px;
+  }
+  .typing-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-mid);
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dot:nth-child(2) { animation-delay: .2s; }
+  .typing-dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce {
+    0%,60%,100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  .chat-input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .chat-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--green-bg);
+    color: var(--text-main);
+    outline: none;
+    resize: none;
+  }
+  .chat-input:focus { border-color: var(--green-light); }
+  .send-btn {
+    padding: 10px 16px;
+    background: var(--green-dark);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background .15s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { background: var(--green-mid); }
+  .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+  /* 모달 */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 24px 20px 32px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 0 4px;
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; display: block; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text-main);
+    background: var(--green-bg);
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--green-light); }
+  .form-textarea { resize: vertical; min-height: 70px; }
+
+  .emoji-picker {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .emoji-opt {
+    font-size: 24px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: center;
+    background: var(--white);
+    transition: all .12s;
+  }
+  .emoji-opt:hover, .emoji-opt.selected { border-color: var(--green-light); background: var(--green-pale); }
+
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--green-dark);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background .15s;
+  }
+  .submit-btn:hover { background: var(--green-mid); }
+
+  /* 이름 설정 */
+  .name-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .name-chip {
+    padding: 7px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    background: var(--white);
+    color: var(--text-sub);
+    transition: all .15s;
+  }
+  .name-chip.selected { border-color: var(--green-dark); background: var(--green-pale); color: var(--green-dark); font-weight: 600; }
+
+  /* 설정 섹션 */
+  .settings-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .settings-card h3 { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+  .api-input-wrap { position: relative; }
+  .api-input {
+    width: 100%;
+    padding: 10px 40px 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono, monospace);
+    font-size: 12px;
+    background: var(--green-bg);
+    color: var(--text-main);
+    outline: none;
+  }
+  .api-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-muted);
+  }
+  .save-api-btn {
+    margin-top: 8px;
+    padding: 8px 16px;
+    background: var(--green-dark);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* 빈 상태 */
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; }
+
+  /* 토스트 */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green-dark);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    z-index: 300;
+    opacity: 0;
+    transition: opacity .25s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* 작물 상세 */
+  .crop-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .crop-detail-emoji { font-size: 44px; }
+  .crop-detail-name { font-size: 20px; font-weight: 700; color: var(--text-main); }
+  .crop-detail-since { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .detail-stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .detail-stat {
+    background: var(--green-pale);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    text-align: center;
+  }
+  .detail-stat-val { font-size: 15px; font-weight: 700; color: var(--green-dark); }
+  .detail-stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .delete-crop-btn {
+    width: 100%;
+    padding: 11px;
+    border: 1.5px solid #fca5a5;
+    border-radius: var(--radius-sm);
+    background: white;
+    color: #dc2626;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background .15s;
+  }
+  .delete-crop-btn:hover { background: #fef2f2; }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --green-bg:   #0F1A08;
+      --white:      #1A2710;
+      --border:     #2A4018;
+      --text-main:  #D4E8B0;
+      --text-sub:   #8AAF5A;
+      --text-muted: #4A6030;
+      --green-pale: #1A2D10;
+    }
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, addDoc, getDocs, deleteDoc, onSnapshot, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ─── Firebase 설정 (여기에 본인 설정값 입력) ───────────────────────────────
+const firebaseConfig = {
+  apiKey:            "YOUR_FIREBASE_API_KEY",
+  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId:         "YOUR_PROJECT_ID",
+  storageBucket:     "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId:             "YOUR_APP_ID"
+};
+// ──────────────────────────────────────────────────────────────────────────────
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// ─── 전역 상태 ─────────────────────────────────────────────────────────────
+let crops   = [];
+let logs    = [];
+let myName  = localStorage.getItem('ggbb_name') || '';
+let geminiKey = localStorage.getItem('ggbb_gemini') || '';
+
+// ─── 유틸 ──────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function formatDate(ts) {
+  if (!ts) return '';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+function daysAgo(ts) {
+  if (!ts) return '?';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  const diff = Math.floor((Date.now() - d.getTime()) / 86400000);
+  return diff === 0 ? '오늘' : `${diff}일 전`;
+}
+
+function daysSince(ts) {
+  if (!ts) return 0;
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+// ─── 탭 전환 ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ─── 이름 선택 ─────────────────────────────────────────────────────────────
+function initNameChips() {
+  document.querySelectorAll('.name-chip').forEach(chip => {
+    if (chip.dataset.name === myName) chip.classList.add('selected');
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.name-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      myName = chip.dataset.name;
+      localStorage.setItem('ggbb_name', myName);
+      toast(`${myName}으로 설정했어요 🌱`);
+    });
+  });
+}
+
+// ─── API 키 저장 ───────────────────────────────────────────────────────────
+document.getElementById('saveApiBtn').addEventListener('click', () => {
+  const val = document.getElementById('geminiApiInput').value.trim();
+  if (!val) { toast('API 키를 입력해주세요'); return; }
+  geminiKey = val;
+  localStorage.setItem('ggbb_gemini', val);
+  toast('저장했어요 ✓');
+});
+document.getElementById('apiToggle').addEventListener('click', () => {
+  const inp = document.getElementById('geminiApiInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+});
+window.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('geminiApiInput');
+  if (geminiKey) inp.value = geminiKey;
+});
+
+// ─── 작물 렌더링 ───────────────────────────────────────────────────────────
+function renderCrops() {
+  const grid = document.getElementById('cropGrid');
+  const sel  = document.getElementById('aiCropSelect');
+  if (crops.length === 0) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🌱</div>
+      <p>아직 심은 작물이 없어요<br>아래 버튼으로 추가해보세요</p>
+    </div>`;
+  } else {
+    grid.innerHTML = crops.map(c => {
+      const since = daysSince(c.plantedAt);
+      const lastWater = logs.filter(l => l.cropId === c.id && l.type === 'water')
+                            .sort((a,b) => b.createdAt?.seconds - a.createdAt?.seconds)[0];
+      const waterDays = lastWater ? daysSince(lastWater.createdAt) : since;
+      let badge = '', badgeCls = '';
+      if (waterDays >= (c.waterInterval || 2)) { badge = '💧 물 필요'; badgeCls = 'badge-water'; }
+      else { badge = '✓ 양호'; badgeCls = 'badge-ok'; }
+      return `<div class="crop-card" onclick="openCropDetail('${c.id}')">
+        <span class="crop-emoji">${c.emoji}</span>
+        <div class="crop-name">${c.name}</div>
+        <div class="crop-date">심은 날: ${formatDate(c.plantedAt)} (${since}일째)</div>
+        <span class="crop-badge ${badgeCls}">${badge}</span>
+      </div>`;
+    }).join('');
+  }
+  // AI 탭 select 동기화
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">작물 선택…</option>' +
+    crops.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+  if (prev) sel.value = prev;
+}
+
+// ─── 일지 렌더링 ───────────────────────────────────────────────────────────
+function renderLogs() {
+  const container = document.getElementById('logContainer');
+  if (logs.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <p>기록이 없어요<br>작물을 관리하고 기록해보세요</p>
+    </div>`;
+    return;
+  }
+  const grouped = {};
+  logs.forEach(l => {
+    const d = l.createdAt?.toDate ? l.createdAt.toDate() : new Date();
+    const key = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(l);
+  });
+  const typeMap = { water:'💧', prune:'✂️', fertilize:'🌿', memo:'📝', harvest:'🎉' };
+  const labelMap = { water:'물 주기', prune:'가지치기', fertilize:'비료 주기', memo:'메모', harvest:'수확' };
+  container.innerHTML = Object.entries(grouped).sort(([a],[b]) => b.localeCompare(a)).map(([date, items]) => `
+    <div class="log-date-group">
+      <div class="log-date-label">${date}</div>
+      ${items.map(l => {
+        const crop = crops.find(c => c.id === l.cropId);
+        return `<div class="log-item">
+          <div class="log-type-icon">${typeMap[l.type] || '📝'}</div>
+          <div class="log-info">
+            <div class="log-crop">${crop ? crop.emoji + ' ' + crop.name : '알 수 없는 작물'}</div>
+            <div class="log-action">${labelMap[l.type] || l.type}${l.memo ? ' · ' + l.memo : ''}</div>
+            <div class="log-meta">${l.who || '누군가'} · ${l.createdAt ? formatDate(l.createdAt) : ''}</div>
+          </div>
+          <span class="log-who">${l.who || '?'}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+}
+
+// ─── Firestore 실시간 리스닝 ────────────────────────────────────────────────
+const cropsRef = collection(db, 'crops');
+const logsRef  = collection(db, 'logs');
+
+onSnapshot(query(cropsRef, orderBy('plantedAt', 'desc')), snap => {
+  crops = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderCrops();
+  renderLogs();
+});
+
+onSnapshot(query(logsRef, orderBy('createdAt', 'desc')), snap => {
+  logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderLogs();
+  renderCrops();
+});
+
+// ─── 작물 추가 모달 ─────────────────────────────────────────────────────────
+const cropEmojis = ['🍅','🥕','🥦','🌽','🥬','🫑','🍆','🧅','🧄','🌶️','🥒','🫒','🍓','🍀','🌻','🌿'];
+let selectedEmoji = '🌱';
+
+document.getElementById('addCropBtn').addEventListener('click', () => {
+  document.getElementById('addCropModal').classList.add('open');
+  renderEmojiPicker();
+});
+document.getElementById('closeAddCrop').addEventListener('click', () => {
+  document.getElementById('addCropModal').classList.remove('open');
+});
+
+function renderEmojiPicker() {
+  const picker = document.getElementById('emojiPicker');
+  picker.innerHTML = cropEmojis.map(e =>
+    `<button class="emoji-opt${e === selectedEmoji ? ' selected' : ''}" onclick="selectEmoji('${e}')">${e}</button>`
+  ).join('');
+}
+window.selectEmoji = function(e) {
+  selectedEmoji = e;
+  renderEmojiPicker();
+};
+
+document.getElementById('saveCropBtn').addEventListener('click', async () => {
+  const name = document.getElementById('cropName').value.trim();
+  const waterInterval = parseInt(document.getElementById('waterInterval').value) || 2;
+  const location = document.getElementById('cropLocation').value.trim();
+  if (!name) { toast('작물 이름을 입력해주세요'); return; }
+  await addDoc(cropsRef, {
+    name, emoji: selectedEmoji, waterInterval, location,
+    plantedAt: serverTimestamp(),
+    addedBy: myName || '누군가'
+  });
+  document.getElementById('addCropModal').classList.remove('open');
+  document.getElementById('cropName').value = '';
+  document.getElementById('cropLocation').value = '';
+  toast(`${selectedEmoji} ${name} 추가했어요!`);
+});
+
+// ─── 작물 상세 모달 ─────────────────────────────────────────────────────────
+window.openCropDetail = function(cropId) {
+  const c = crops.find(x => x.id === cropId);
+  if (!c) return;
+  const since = daysSince(c.plantedAt);
+  const cropLogs = logs.filter(l => l.cropId === cropId);
+  const waterCount = cropLogs.filter(l => l.type === 'water').length;
+  const lastLog = cropLogs[0];
+  document.getElementById('cropDetailContent').innerHTML = `
+    <div class="crop-detail-header">
+      <div class="crop-detail-emoji">${c.emoji}</div>
+      <div>
+        <div class="crop-detail-name">${c.name}</div>
+        <div class="crop-detail-since">심은 지 ${since}일 · ${c.location || '위치 미입력'}</div>
+      </div>
+    </div>
+    <div class="detail-stat-row">
+      <div class="detail-stat"><div class="detail-stat-val">${since}일</div><div class="detail-stat-lbl">함께한 날</div></div>
+      <div class="detail-stat"><div class="detail-stat-val">${waterCount}회</div><div class="detail-stat-lbl">물 준 횟수</div></div>
+      <div class="detail-stat"><div class="detail-stat-val">${lastLog ? daysAgo(lastLog.createdAt) : '없음'}</div><div class="detail-stat-lbl">마지막 관리</div></div>
+    </div>
+    <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">물 주기 간격: ${c.waterInterval || 2}일마다</div>
+    <button class="delete-crop-btn" onclick="deleteCrop('${c.id}','${c.name}')">🗑️ 이 작물 삭제하기</button>
+  `;
+  document.getElementById('cropDetailModal').classList.add('open');
+};
+document.getElementById('closeCropDetail').addEventListener('click', () => {
+  document.getElementById('cropDetailModal').classList.remove('open');
+});
+window.deleteCrop = async function(id, name) {
+  if (!confirm(`${name}을(를) 삭제할까요?`)) return;
+  await deleteDoc(doc(db, 'crops', id));
+  document.getElementById('cropDetailModal').classList.remove('open');
+  toast('삭제했어요');
+};
+
+// ─── 관리 기록 모달 ─────────────────────────────────────────────────────────
+document.getElementById('recordBtn').addEventListener('click', () => {
+  if (crops.length === 0) { toast('먼저 작물을 추가해주세요 🌱'); return; }
+  const sel = document.getElementById('logCropSelect');
+  sel.innerHTML = crops.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+  document.getElementById('recordModal').classList.add('open');
+});
+document.getElementById('closeRecord').addEventListener('click', () => {
+  document.getElementById('recordModal').classList.remove('open');
+});
+document.getElementById('saveLogBtn').addEventListener('click', async () => {
+  if (!myName) { toast('먼저 내 이름을 설정해주세요 (설정 탭)'); return; }
+  const cropId = document.getElementById('logCropSelect').value;
+  const type   = document.getElementById('logType').value;
+  const memo   = document.getElementById('logMemo').value.trim();
+  if (!cropId) { toast('작물을 선택해주세요'); return; }
+  await addDoc(logsRef, { cropId, type, memo, who: myName, createdAt: serverTimestamp() });
+  document.getElementById('recordModal').classList.remove('open');
+  document.getElementById('logMemo').value = '';
+  toast('기록했어요 ✓');
+});
+
+// ─── AI 상담 (Gemini) ──────────────────────────────────────────────────────
+const chatHistory = [];
+
+function appendChat(role, text) {
+  const box = document.getElementById('chatBox');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  const sender = role === 'user' ? (myName || '나') : '🌿 밭요정';
+  div.innerHTML = `<div class="chat-sender">${sender}</div>
+    <div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function showTyping() {
+  const box = document.getElementById('chatBox');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ai';
+  div.id = 'typingIndicator';
+  div.innerHTML = `<div class="chat-sender">🌿 밭요정</div>
+    <div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+async function sendAI(userMsg) {
+  if (!geminiKey) { toast('설정 탭에서 Gemini API 키를 먼저 입력해주세요'); return; }
+  const cropId = document.getElementById('aiCropSelect').value;
+  const crop   = crops.find(c => c.id === cropId);
+  const cropCtx = crop
+    ? `현재 선택한 작물: ${crop.name} (심은 지 ${daysSince(crop.plantedAt)}일, 물 주기 간격 ${crop.waterInterval||2}일)`
+    : '작물 미선택';
+  appendChat('user', userMsg);
+  chatHistory.push({ role:'user', parts:[{text:userMsg}] });
+  showTyping();
+  document.getElementById('sendBtn').disabled = true;
+  try {
+    const systemCtx = `당신은 텃밭 관리 전문 AI 도우미 '밭요정'입니다. 
+${cropCtx}
+한국어로 친근하고 간결하게 답변하세요. 작물 관리 (물 주기, 가지치기, 비료, 병충해, 수확 시기 등)에 대한 실용적인 조언을 주세요. 
+답변은 3-5문장 정도로 핵심만 말해주세요.`;
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          system_instruction: { parts:[{text:systemCtx}] },
+          contents: chatHistory
+        })
+      }
+    );
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '답변을 받지 못했어요.';
+    hideTyping();
+    appendChat('ai', reply);
+    chatHistory.push({ role:'model', parts:[{text:reply}] });
+  } catch(e) {
+    hideTyping();
+    appendChat('ai', `오류가 발생했어요: ${e.message}`);
+  }
+  document.getElementById('sendBtn').disabled = false;
+}
+
+document.getElementById('sendBtn').addEventListener('click', () => {
+  const inp = document.getElementById('chatInput');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+  sendAI(msg);
+});
+document.getElementById('chatInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('sendBtn').click(); }
+});
+
+document.querySelectorAll('.quick-chip').forEach(chip => {
+  chip.addEventListener('click', () => sendAI(chip.dataset.q));
+});
+
+// ─── 초기화 ────────────────────────────────────────────────────────────────
+initNameChips();
+
+// 첫 진입 시 이름 없으면 안내
+if (!myName) {
+  setTimeout(() => toast('설정 탭에서 이름을 선택해주세요 🌱'), 800);
+}
+</script>
+
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="app-title">공공<span>밭밭</span> 🌱</div>
+    <div class="weather-chip" id="weatherChip">오늘도 잘 자라고 있어요</div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="tab-crops">
+      <span class="tab-icon">🌿</span>작물목록
+    </button>
+    <button class="tab-btn" data-tab="tab-logs">
+      <span class="tab-icon">📋</span>관리일지
+    </button>
+    <button class="tab-btn" data-tab="tab-ai">
+      <span class="tab-icon">🤖</span>AI상담
+    </button>
+    <button class="tab-btn" data-tab="tab-settings">
+      <span class="tab-icon">⚙️</span>설정
+    </button>
+  </div>
+</header>
+
+<!-- 작물목록 탭 -->
+<div id="tab-crops" class="content active">
+  <p class="section-title">우리 밭의 작물들</p>
+  <div class="crop-grid" id="cropGrid">
+    <div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🌱</div>
+      <p>불러오는 중…</p>
+    </div>
+  </div>
+  <button class="add-btn" id="addCropBtn">＋ 작물 추가하기</button>
+</div>
+
+<!-- 관리일지 탭 -->
+<div id="tab-logs" class="content">
+  <p class="section-title">관리 기록</p>
+  <div id="logContainer"></div>
+  <div style="height:70px"></div>
+</div>
+
+<!-- AI 상담 탭 -->
+<div id="tab-ai" class="content">
+  <div class="ai-header">
+    <p class="section-title" style="margin:0 0 4px">어떤 작물에 대해 물어볼까요?</p>
+    <select class="ai-crop-select" id="aiCropSelect">
+      <option value="">작물 선택…</option>
+    </select>
+  </div>
+  <p class="section-title">빠른 질문</p>
+  <div class="quick-chips">
+    <button class="chip quick-chip" data-q="지금 물을 줘야 할까요?">💧 물 줄 때 됐나요?</button>
+    <button class="chip quick-chip" data-q="가지치기 방법을 알려주세요">✂️ 가지치기 방법</button>
+    <button class="chip quick-chip" data-q="비료는 얼마나 자주 줘야 하나요?">🌿 비료 주기</button>
+    <button class="chip quick-chip" data-q="병충해 예방법을 알려주세요">🐛 병충해 예방</button>
+    <button class="chip quick-chip" data-q="수확 시기를 어떻게 알 수 있나요?">🎉 수확 시기</button>
+  </div>
+  <div class="chat-box" id="chatBox">
+    <div class="chat-msg ai">
+      <div class="chat-sender">🌿 밭요정</div>
+      <div class="chat-bubble">안녕하세요! 저는 공공밭밭의 AI 도우미 밭요정이에요 🌱<br>작물을 선택하고 궁금한 게 있으면 뭐든 물어보세요!</div>
+    </div>
+  </div>
+  <div class="chat-input-row">
+    <textarea class="chat-input" id="chatInput" placeholder="궁금한 점을 입력하세요…" rows="1"></textarea>
+    <button class="send-btn" id="sendBtn">↑</button>
+  </div>
+</div>
+
+<!-- 설정 탭 -->
+<div id="tab-settings" class="content">
+  <p class="section-title">내 정보</p>
+  <div class="settings-card">
+    <h3>나는 누구?</h3>
+    <div class="name-chips">
+      <button class="name-chip" data-name="리아">리아</button>
+      <button class="name-chip" data-name="은호">은호</button>
+    </div>
+  </div>
+
+  <p class="section-title">API 설정</p>
+  <div class="settings-card">
+    <h3>Gemini API 키</h3>
+    <div class="api-input-wrap">
+      <input class="api-input" id="geminiApiInput" type="password" placeholder="AIza…">
+      <button class="api-toggle" id="apiToggle">👁</button>
+    </div>
+    <button class="save-api-btn" id="saveApiBtn">저장</button>
+    <p style="font-size:11px;color:var(--text-muted);margin-top:8px">
+      키는 이 기기에만 저장돼요. 
+      <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--green-mid)">발급받기 →</a>
+    </p>
+  </div>
+
+  <p class="section-title">앱 정보</p>
+  <div class="settings-card">
+    <p style="font-size:13px;color:var(--text-sub);line-height:1.7">
+      공공밭밭 🌱<br>
+      리아와 은호의 텃밭 관리 앱<br>
+      <span style="color:var(--text-muted);font-size:12px">Firebase로 실시간 공유 · Gemini AI 상담</span>
+    </p>
+  </div>
+</div>
+
+<!-- 기록 버튼 (일지 탭에서만) -->
+<button class="record-btn" id="recordBtn" style="display:none">＋ 오늘 관리 기록하기</button>
+
+<!-- 작물 추가 모달 -->
+<div class="modal-overlay" id="addCropModal">
+  <div class="modal">
+    <div class="modal-title">
+      작물 추가하기
+      <button class="modal-close" id="closeAddCrop">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">이모지 선택</label>
+      <div class="emoji-picker" id="emojiPicker"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">작물 이름</label>
+      <input class="form-input" id="cropName" placeholder="예: 방울토마토">
+    </div>
+    <div class="form-group">
+      <label class="form-label">물 주기 간격 (일)</label>
+      <input class="form-input" id="waterInterval" type="number" value="2" min="1" max="14">
+    </div>
+    <div class="form-group">
+      <label class="form-label">위치 (선택)</label>
+      <input class="form-input" id="cropLocation" placeholder="예: 왼쪽 화단, 3번 자리">
+    </div>
+    <button class="submit-btn" id="saveCropBtn">추가하기</button>
+  </div>
+</div>
+
+<!-- 작물 상세 모달 -->
+<div class="modal-overlay" id="cropDetailModal">
+  <div class="modal">
+    <div class="modal-title">
+      작물 정보
+      <button class="modal-close" id="closeCropDetail">✕</button>
+    </div>
+    <div id="cropDetailContent"></div>
+  </div>
+</div>
+
+<!-- 관리 기록 모달 -->
+<div class="modal-overlay" id="recordModal">
+  <div class="modal">
+    <div class="modal-title">
+      오늘 관리 기록
+      <button class="modal-close" id="closeRecord">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">작물 선택</label>
+      <select class="form-select" id="logCropSelect"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">한 일</label>
+      <select class="form-select" id="logType">
+        <option value="water">💧 물 주기</option>
+        <option value="prune">✂️ 가지치기</option>
+        <option value="fertilize">🌿 비료 주기</option>
+        <option value="harvest">🎉 수확</option>
+        <option value="memo">📝 메모</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모 (선택)</label>
+      <textarea class="form-textarea" id="logMemo" placeholder="오늘 상태, 특이사항 등…"></textarea>
+    </div>
+    <button class="submit-btn" id="saveLogBtn">기록하기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // 일지 탭일 때만 기록 버튼 표시
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const recordBtn = document.getElementById('recordBtn');
+      recordBtn.style.display = btn.dataset.tab === 'tab-logs' ? 'flex' : 'none';
+    });
+  });
+</script>
+
+</body>
+</html>
