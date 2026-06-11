@@ -802,13 +802,11 @@ const INITIAL_CROPS = [
 ];
 
 async function seedInitialCrops() {
-  if (localStorage.getItem('ggbb_seeded')) return;
   const snap = await getDocs(cropsRef);
-  if (!snap.empty) { localStorage.setItem('ggbb_seeded','1'); return; }
+  if (!snap.empty) return;
   for (const c of INITIAL_CROPS) {
     await addDoc(cropsRef, { ...c, location:'', plantedAt: serverTimestamp(), addedBy:'초기설정' });
   }
-  localStorage.setItem('ggbb_seeded','1');
   toast('작물 11개를 불러왔어요 🌱');
 }
 
@@ -1328,6 +1326,28 @@ document.addEventListener('click', () => {
   document.getElementById('weatherFloat').classList.remove('open');
 });
 fetchWeather();
+
+
+// ─── 일지 수정/삭제 ──────────────────────────────────────────────────────
+window.deleteLog = async function(id) {
+  if (!confirm('이 기록을 삭제할까요?')) return;
+  await deleteDoc(doc(db, 'logs', id));
+  toast('삭제했어요');
+};
+
+window.openEditLog = function(id) {
+  const l = logs.find(x => x.id === id);
+  if (!l) return;
+  const sel = document.getElementById('logCropSelect');
+  sel.innerHTML = crops.map(c => `<option value="${c.id}">${c.emoji} ${c.name}</option>`).join('');
+  sel.value = l.cropId;
+  document.getElementById('logType').value = l.type;
+  document.getElementById('logMemo').value = l.memo || '';
+  const saveBtn = document.getElementById('saveLogBtn');
+  saveBtn.textContent = '수정하기';
+  saveBtn.dataset.editId = id;
+  document.getElementById('recordModal').classList.add('open');
+};
 
 // ─── 초기화 ────────────────────────────────────────────────────────────────
 initNameChips();
