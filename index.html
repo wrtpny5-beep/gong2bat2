@@ -232,12 +232,9 @@
   .log-action-memo { font-size: 14px; color: var(--text-sub); margin-bottom: 4px; font-family: var(--font-gaegu); line-height: 1.5; }
   .log-meta { font-size: 11px; color: var(--text-muted); }
   .log-who {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background: #dff0f7;
-    color: #2390ca;
-    font-weight: 600;
+    font-size: 26px;
+    flex-shrink: 0;
+    align-self: center;
   }
 
   /* 기록 추가 */
@@ -1071,9 +1068,9 @@ function renderLogs() {
           </div>`
         ).join('');
         return `<div class="log-item" id="log-${l.id}">
-          <div class="log-type-icon">${typeMap[l.type] || '📝'}</div>
+          <div class="log-type-icon">${crop ? crop.emoji : '🌱'}</div>
           <div class="log-info">
-            <div class="log-crop">${crop ? crop.emoji + ' ' + crop.name : '알 수 없는 작물'}</div>
+            <div class="log-crop">${crop ? crop.name : '알 수 없는 작물'}</div>
             <div class="${l.type === 'memo' ? 'log-action-memo' : 'log-action'}">${labelMap[l.type] || l.type}${l.memo ? ' · ' + l.memo : ''}</div>
             <div class="log-meta">${l.who || '누군가'} · ${l.createdAt ? formatDate(l.createdAt) : ''}</div>
             <div class="log-actions">
@@ -1088,7 +1085,7 @@ function renderLogs() {
               </div>
             </div>
           </div>
-          <span class="log-who">${l.who || '?'}</span>
+          <span class="log-who">${typeMap[l.type] || '📝'}</span>
         </div>`;
       }).join('')}
     </div>
