@@ -1377,9 +1377,9 @@ function renderGuideDetail(c, text, editMode = false) {
         <button class="guide-edit-btn" onclick="openGuide('${c.id}')">취소</button>
       </div>`;
   } else {
+    const safeText = text.replace(/\n/g, '<br>');
     document.getElementById('guideDetailContent').innerHTML = header + `
-      <div class="guide-content" id="guideContentText">${text.replace(/
-/g,'<br>')}</div>
+      <div class="guide-content" id="guideContentText">${safeText}</div>
       <div class="guide-btn-row">
         <button class="guide-edit-btn" onclick="toggleGuideEdit('${c.id}')">✏️ 편집</button>
         <button class="guide-refresh-btn" onclick="fetchGuide('${c.id}')">🔄 AI 새로 생성</button>
