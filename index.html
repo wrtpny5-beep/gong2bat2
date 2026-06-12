@@ -1068,7 +1068,42 @@ onSnapshot(query(cropsRef, orderBy('plantedAt', 'desc')), snap => {
   renderCrops();
   renderLogs();
   renderGuideCards();
+  // guideText 없는 작물 백그라운드에서 순차 생성
+  prefetchGuides();
 });
+
+let prefetchDone = false;
+async function prefetchGuides() {
+  if (prefetchDone || !groqKey) return;
+  const missing = crops.filter(c => !c.guideText);
+  if (missing.length === 0) { prefetchDone = true; return; }
+  prefetchDone = true;
+  for (const c of missing) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile', max_tokens: 1024,
+          messages: [
+            { role: 'system', content: '당신은 텃밭 재배 전문가입니다. 반드시 한국어로만 답변하세요. 다른 언어는 절대 사용하지 마세요. 친근하고 실용적으로 답변하세요.' },
+            { role: 'user', content: `${c.name} 텃밭 재배 관리법을 아래 항목으로 간결하게 알려주세요. 각 항목은 이모지와 함께 써주세요.\n\n💧 물 주기\n✂️ 가지치기\n🌿 비료\n🐛 병충해 예방\n🎉 수확 시기\n💡 재배 팁` }
+          ]
+        })
+      });
+      const data = await res.json();
+      if (!data.error) {
+        const text = data.choices?.[0]?.message?.content;
+        if (text) {
+          await updateDoc(doc(db, 'crops', c.id), { guideText: text });
+          c.guideText = text;
+        }
+      }
+    } catch(e) { console.log('prefetch 오류', c.name, e); }
+    // 너무 빠르게 호출하면 rate limit - 1초 간격
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}
 
 seedInitialCrops();
 
