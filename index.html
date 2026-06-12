@@ -174,6 +174,28 @@
   .add-btn:hover { border-color: #2390ca; color: #03695e; background: #dff0f7; }
 
   /* 일지 */
+
+  .log-filter-wrap {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .log-filter-chip {
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-sub);
+    background: var(--white);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .12s;
+    white-space: nowrap;
+  }
+  .log-filter-chip.active {
+    background: #2D5016;
+    color: white;
+    border-color: #2D5016;
+  }
   .log-date-group { margin-bottom: 20px; }
   .log-date-label {
     font-size: 12px;
@@ -839,6 +861,7 @@ const db  = getFirestore(app);
 let crops    = [];
 let logs     = [];
 let comments = [];
+let logFilter = 'all';
 let myName  = localStorage.getItem('ggbb_name') || '';
 let groqKey = localStorage.getItem('ggbb_groq') || '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';
 
@@ -1004,7 +1027,21 @@ function renderCrops() {
 // ─── 일지 렌더링 ───────────────────────────────────────────────────────────
 function renderLogs() {
   const container = document.getElementById('logContainer');
-  if (logs.length === 0) {
+
+  // 필터 칩 렌더링
+  const filterWrap = document.getElementById('logFilterWrap');
+  if (filterWrap) {
+    filterWrap.innerHTML = [
+      { id: 'all', label: '🌿 전체' },
+      ...crops.map(c => ({ id: c.id, label: `${c.emoji} ${c.name}` }))
+    ].map(f => `<button class="log-filter-chip ${logFilter === f.id ? 'active' : ''}"
+      onclick="setLogFilter('${f.id}')">${f.label}</button>`).join('');
+  }
+
+  // 필터 적용
+  const filteredLogs = logFilter === 'all' ? logs : logs.filter(l => l.cropId === logFilter);
+
+  if (filteredLogs.length === 0) {
     container.innerHTML = `<div class="empty-state">
       <div class="empty-icon">📋</div>
       <p>기록이 없어요<br>작물을 관리하고 기록해보세요</p>
@@ -1012,7 +1049,7 @@ function renderLogs() {
     return;
   }
   const grouped = {};
-  logs.forEach(l => {
+  filteredLogs.forEach(l => {
     const d = l.createdAt?.toDate ? l.createdAt.toDate() : new Date();
     const key = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
     if (!grouped[key]) grouped[key] = [];
@@ -1556,6 +1593,13 @@ window.addComment = async function(logId) {
   inp.value = '';
 };
 
+
+// ─── 일지 필터 ───────────────────────────────────────────────────────────
+window.setLogFilter = function(cropId) {
+  logFilter = cropId;
+  renderLogs();
+};
+
 // ─── 초기화 ────────────────────────────────────────────────────────────────
 initNameChips();
 
@@ -1606,7 +1650,7 @@ if (!myName) {
 
 <!-- 관리일지 탭 -->
 <div id="tab-logs" class="content">
-  <p class="section-title">관리 기록</p>
+  <div class="log-filter-wrap" id="logFilterWrap"></div>
   <div id="logContainer"></div>
   <div style="height:70px"></div>
 </div>
